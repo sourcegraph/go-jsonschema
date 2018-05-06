@@ -14,11 +14,9 @@ import (
 func TestJSONUnmarshalMarshal(t *testing.T) {
 	// TODO(sqs): Make these tests work.
 	skip := map[string]struct{}{
-		"TestJSONUnmarshalMarshal/additionalItems/additionalItems_as_schema":              struct{}{},
-		"TestJSONUnmarshalMarshal/additionalItems/additionalItems_are_allowed_by_default": struct{}{},
-		"TestJSONUnmarshalMarshal/const/const_with_null":                                  struct{}{},
-		"TestJSONUnmarshalMarshal/ref/escaped_pointer_ref":                                struct{}{},
-		"TestJSONUnmarshalMarshal/required/required_with_empty_array":                     struct{}{},
+		"TestJSONUnmarshalMarshal/const/const_with_null":              struct{}{},
+		"TestJSONUnmarshalMarshal/ref/escaped_pointer_ref":            struct{}{},
+		"TestJSONUnmarshalMarshal/required/required_with_empty_array": struct{}{},
 	}
 
 	files, err := jsonschematestsuite.Files("../internal")
