@@ -11,11 +11,11 @@
           { "$ref": "#/definitions/B" },
           { "$ref": "#/definitions/C" },
           { "$ref": "#/definitions/D" }
-        ]
-      },
-	  "!go": {
-		"taggedUnionType": true
-	  }
+        ],
+		"!go": {
+		  "taggedUnionType": true
+		}
+      }
 	}
   },
   "definitions": {

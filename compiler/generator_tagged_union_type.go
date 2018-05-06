@@ -14,13 +14,13 @@ import (
 
 func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, []*ast.ImportSpec, error) {
 	// Check that this schema can use the !go.taggedUnionType extension.
-	if len(schema.Type) != 1 || schema.Type[0] != jsonschema.ArrayType || schema.Items == nil || schema.Items.Schema == nil || len(schema.Items.Schema.OneOf) == 0 {
+	if len(schema.Type) != 1 || schema.Type[0] != jsonschema.ObjectType || len(schema.OneOf) == 0 {
 		return nil, nil, errors.New("invalid schema for use with !go.taggedUnionType extension")
 	}
 
 	// Next, try to find the discriminant property.
-	oneOfSchemas := make([]*jsonschema.Schema, len(schema.Items.Schema.OneOf))
-	for i, s := range schema.Items.Schema.OneOf {
+	oneOfSchemas := make([]*jsonschema.Schema, len(schema.OneOf))
+	for i, s := range schema.OneOf {
 		if s.Reference != nil {
 			s = g.resolutions[s]
 		}

@@ -125,8 +125,6 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, error) {
 		return g.expr(g.resolutions[schema])
 	}
 
-	useGoTaggedUnionType := schema.Go != nil && schema.Go.TaggedUnionType
-
 	// Handle array types.
 	if len(schema.Type) == 1 && schema.Type[0] == jsonschema.ArrayType {
 		var elt ast.Expr
@@ -139,6 +137,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, error) {
 			// Prefer array-of-pointer-to-struct over array-of-struct.
 			//
 			// TODO(sqs): Not all $ref values point to things that are Go named types.
+			useGoTaggedUnionType := schema.Items.Schema.Go != nil && schema.Items.Schema.Go.TaggedUnionType
 			if (isEmittedAsGoNamedType(schema.Items.Schema) || schema.Items.Schema.Reference != nil) && !useGoTaggedUnionType {
 				elt = &ast.StarExpr{X: elt}
 			}
