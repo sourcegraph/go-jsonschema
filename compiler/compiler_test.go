@@ -62,12 +62,12 @@ func testCompiler(t *testing.T, dir string) {
 		}
 	}
 
-	decls, err := Compile(schemas)
+	decls, imports, err := Compile(schemas)
 	if err != nil {
 		t.Fatal(err)
 	}
 	var buf bytes.Buffer
-	file := &ast.File{Name: ast.NewIdent("p"), Decls: decls}
+	file := &ast.File{Name: ast.NewIdent("p"), Imports: imports, Decls: decls}
 	if err := format.Node(&buf, token.NewFileSet(), file); err != nil {
 		t.Fatal(err)
 	}

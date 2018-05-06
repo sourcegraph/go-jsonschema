@@ -1,0 +1,47 @@
+{
+  "title": "oneOf",
+  "description": "oneOf to implement a tagged union type",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "type": "array",
+	  "items": {
+		"type": "object",
+        "oneOf": [
+          { "$ref": "#/definitions/B" },
+          { "$ref": "#/definitions/C" },
+          { "$ref": "#/definitions/D" }
+        ]
+      },
+	  "!go": {
+		"taggedUnionType": true
+	  }
+	}
+  },
+  "definitions": {
+	"B": {
+	  "type": "object",
+	  "required": ["type"],
+	  "properties": {
+		"type": { "type": "string", "enum": ["b"] },
+		"b": { "type": "string" }
+	  }
+	},
+	"C": {
+	  "type": "object",
+	  "required": ["type"],
+	  "properties": {
+		"type": { "type": "string", "enum": ["c"] },
+		"c": { "type": "boolean" }
+	  }
+	},
+	"D": {
+	  "type": "object",
+	  "required": ["type"],
+	  "properties": {
+		"type": { "type": "string", "enum": ["d"] },
+		"d": { "type": "number" }
+	  }
+	}
+  }
+}
