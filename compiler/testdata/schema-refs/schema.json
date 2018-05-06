@@ -1,0 +1,36 @@
+{
+  "title": "schema-refs",
+  "type": "object",
+  "required": ["d", "dArray"],
+  "properties": {
+	"d": { "$ref": "#/definitions/D" },
+	"dPointer":{ "$ref": "#/definitions/D" },
+	"dArray": {
+	  "type": "array",
+	  "items": {"$ref": "#/definitions/D"}
+	},
+	"dArrayPointer": {
+	  "type": "array",
+	  "items": {"$ref": "#/definitions/D"}
+	}
+  },
+  "definitions": {
+	"D": {
+	  "type": "object",
+	  "required": ["eArray"],
+	  "properties": {
+		"e": { "$ref": "#/definitions/E" },
+		"eArray": {
+		  "type": "array",
+		  "items": {"$ref": "#/definitions/E"}
+		}
+	  }
+	},
+	"E": {
+	  "type": "object",
+	  "properties": {
+		"a": { "type": "string" }
+	  }
+	}
+  }
+}

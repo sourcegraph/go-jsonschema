@@ -1,0 +1,12 @@
+{
+  "title": "object-of-primitives",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "type": "string"
+	},
+	"b": {
+	  "type": "number"
+	}
+  }
+}

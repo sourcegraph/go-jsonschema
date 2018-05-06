@@ -1,0 +1,41 @@
+[
+  {
+    "description": "single-element items",
+    "schema": {
+	  "type": "array",
+      "items": [{"type": "string"}]
+    },
+    "tests": [
+      {
+        "description": "valid",
+        "data": ["a"],
+        "valid": true
+      },
+      {
+        "description": "empty",
+        "data": [],
+        "valid": false
+      },
+      {
+        "description": "mismatch second",
+        "data": ["a", "b"],
+        "valid": false
+      },
+      {
+        "description": "mismatch first",
+        "data": [1],
+        "valid": false
+      },
+      {
+        "description": "mismatch first and second",
+        "data": [1, "b"],
+        "valid": false
+      },
+      {
+        "description": "wrong type",
+        "data": "a",
+        "valid": false
+      }
+    ]
+  }
+]
