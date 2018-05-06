@@ -40,7 +40,7 @@ func testCompiler(t *testing.T, dir string) {
 		t.Fatal(err)
 	}
 
-	var jsonSchemas []*jsonschema.Schema
+	var schemas []*jsonschema.Schema
 	goFiles := map[string][]byte{}
 	for _, entry := range entries {
 		if entry.Mode().IsDir() {
@@ -56,13 +56,13 @@ func testCompiler(t *testing.T, dir string) {
 			if err := json.Unmarshal(data, &schema); err != nil {
 				t.Fatalf("unmarshal %s: %s", entry.Name(), err)
 			}
-			jsonSchemas = append(jsonSchemas, &schema)
+			schemas = append(schemas, &schema)
 		case ".go":
 			goFiles[entry.Name()] = data
 		}
 	}
 
-	decls, err := Compile(jsonschema.Scope{Schemas: jsonSchemas})
+	decls, err := Compile(schemas)
 	if err != nil {
 		t.Fatal(err)
 	}

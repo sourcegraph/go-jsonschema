@@ -46,7 +46,7 @@ func main() {
 		}
 	}
 
-	decls, err := compiler.Compile(jsonschema.Scope{Schemas: schemas})
+	decls, err := compiler.Compile(schemas)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "go-jsonschema-compiler: compilation error: %s.\n", err)
 		os.Exit(2)

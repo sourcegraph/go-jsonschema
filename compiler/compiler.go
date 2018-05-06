@@ -8,18 +8,17 @@ import (
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
-// Compile generates Go declarations for types that hold values described by the JSON Schemas in
-// the scope.
+// Compile generates Go declarations for types that hold values described by the JSON Schemas.
 //
 // 1. Parse (per-schema)
 // 2. Resolve references (all schemas)
 // 3. Generate code (per-schema)
-func Compile(scope jsonschema.Scope) ([]ast.Decl, error) {
+func Compile(schemas []*jsonschema.Schema) ([]ast.Decl, error) {
 	//
 	// Step 1: Parse (per-schema)
 	//
-	locationsByRoot := make(schemaLocationsByRoot, len(scope.Schemas))
-	for _, root := range scope.Schemas {
+	locationsByRoot := make(schemaLocationsByRoot, len(schemas))
+	for _, root := range schemas {
 		var err error
 		locationsByRoot[root], err = parseSchema(root)
 		if err != nil {
