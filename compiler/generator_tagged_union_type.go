@@ -57,6 +57,18 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 	discriminantValues := make([]string, 0, len(oneOfSchemas))
 	for _, s := range oneOfSchemas {
 		prop := (*s.Properties)[discriminantPropName]
+
+		var required bool
+		for _, req := range s.Required {
+			if req == discriminantPropName {
+				required = true
+				break
+			}
+		}
+		if !required {
+			return nil, nil, fmt.Errorf("invalid oneOf schema for !go.taggedUnionType extension (discriminant property %q must be required)", discriminantPropName)
+		}
+
 		if len(prop.Type) != 1 || prop.Type[0] != jsonschema.StringType {
 			return nil, nil, errors.New("invalid oneOf schema discriminant prop type for !go.taggedUnionType extension (must be string type)")
 		}
