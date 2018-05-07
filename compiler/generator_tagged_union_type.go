@@ -92,21 +92,17 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 	fieldNames := make([]string, len(oneOfSchemas))
 	fieldNameToEnumValue := make(map[string]string, len(oneOfSchemas))
 	for i, s := range oneOfSchemas {
-		goName, err := goNameForSchema(s, g.schemas[s])
-		if err != nil {
-			return nil, nil, err
-		}
+		enumValue := (*s.Properties)[discriminantPropName].Enum[0].(string)
+		fieldNames[i] = toGoName(enumValue, "Enum_")
+		fieldNameToEnumValue[fieldNames[i]] = enumValue
 		typeExpr, err := g.expr(s)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, fmt.Sprintf("failed to get type expression for !go.taggedUnionType union type %q", goName))
+			return nil, nil, errors.WithMessage(err, fmt.Sprintf("failed to get type expression for !go.taggedUnionType union type %q", fieldNames[i]))
 		}
 		fields[i] = &ast.Field{
-			Names: []*ast.Ident{ast.NewIdent(goName)},
+			Names: []*ast.Ident{ast.NewIdent(fieldNames[i])},
 			Type:  &ast.StarExpr{X: typeExpr},
 		}
-		fieldNames[i] = goName
-		enumValue := (*s.Properties)[discriminantPropName].Enum[0].(string)
-		fieldNameToEnumValue[goName] = enumValue
 	}
 	goName, err := goNameForSchema(schema, g.schemas[schema])
 	if err != nil {
