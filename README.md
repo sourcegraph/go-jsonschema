@@ -5,7 +5,6 @@
 A Go library for working with [JSON Schema](https://json-schema.org):
 
 - reading JSON Schema documents
-- validating against JSON Schemas
 - generating Go types to hold values that validate against a JSON Schema
 
 Compatible with **JSON Schema** draft-07:
