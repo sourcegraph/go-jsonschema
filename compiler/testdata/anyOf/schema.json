@@ -1,0 +1,10 @@
+{
+  "title": "anyOf",
+  "description": "anyOf",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "anyOf": [{ "type": "string" }, { "type": "boolean" }]
+	}
+  }
+}

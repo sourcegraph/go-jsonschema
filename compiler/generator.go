@@ -80,12 +80,13 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) ([]ast.Decl, []*as
 
 		var jsonStructTagExtra string
 		if !schema.IsRequiredProperty(name) {
-			// In Go, a pointer-to-{array,map}-type doesn't add (necessary) expressiveness for our use
-			// case vs. just an {array,map} type.
+			// In Go, a pointer-to-{array,map,interface}-type doesn't add (necessary) expressiveness for our use
+			// case vs. just an {array,map,interface} type.
 			_, isPtrToArray := typeExpr.(*ast.ArrayType)
 			_, isPtrToMap := typeExpr.(*ast.MapType)
+			_, isPtrToInterface := typeExpr.(*ast.InterfaceType)
 			isGoBuiltinType := len(prop.Type) == 1 && goBuiltinType(prop.Type[0]) != ""
-			if !isPtrToArray && !isPtrToMap && !isGoBuiltinType {
+			if !isPtrToArray && !isPtrToMap && !isPtrToInterface && !isGoBuiltinType {
 				typeExpr = &ast.StarExpr{X: typeExpr}
 			}
 			jsonStructTagExtra = ",omitempty"
