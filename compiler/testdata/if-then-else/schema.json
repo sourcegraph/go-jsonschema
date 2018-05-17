@@ -1,0 +1,34 @@
+{
+  "title": "object-of-primitives",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "type": "string"
+	}
+  },
+  "if": {
+	"type": "object",
+	"properties": {
+	  "a": {
+		"type": "string",
+		"enum": ["a"]
+	  }
+	}
+  },
+  "then": {
+	"type": "object",
+	"properties": {
+	  "b": {
+		"type": "boolean"
+	  }
+	}
+  },
+  "else": {
+	"type": "object",
+	"properties": {
+	  "b": {
+		"type": "number"		
+	  }
+	}
+  }
+}
