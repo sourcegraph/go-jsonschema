@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://sourcegraph.com/v1/site.schema.json#",
   "title": "Site configuration",
   "description": "Configuration for a Sourcegraph site.",
@@ -32,7 +32,7 @@
     },
     "disableTelemetry": {
       "description":
-        "Prevent usage data from being sent back to Sourcegraph (no private code is sent and URLs are sanitized to prevent leakage of private data).",
+        "(Deprecated: event-level telemetry is now always disabled) Prevent usage data from being sent back to Sourcegraph (no private code is sent and URLs are sanitized to prevent leakage of private data).",
       "type": "boolean"
     },
     "disableExampleSearches": {
@@ -54,13 +54,14 @@
           "description": "Enables or disables the `timeout:` parameter in searches.",
           "type": "string",
           "enum": ["enabled", "disabled"],
-          "default": "disabled"
+          "default": "enabled"
         },
-        "showMissingRepos": {
-          "description": "Enables or disables showing repositories that were not searched",
+        "enhancedSAML": {
+          "description":
+            "Enables or disables the enhanced SAML implementation (which supports better error reporting, configuration, and usage with other auth providers).",
           "type": "string",
           "enum": ["enabled", "disabled"],
-          "default": "enabled"
+          "default": "disabled"
         },
         "jumpToDefOSSIndex": {
           "description":
@@ -72,6 +73,13 @@
         "hostSurveysLocally": {
           "description":
             "Enables or disables hosting user satisfaction surveys locally. Once stable, this feature will be default.",
+          "type": "string",
+          "enum": ["enabled", "disabled"],
+          "default": "disabled"
+        },
+        "multipleAuthProviders": {
+          "description":
+            "Enables or disables the use of multiple authentication providers and a publicly accessible web page displaying authentication options for unauthenticated users. (WARNING: Do not use this unless you know what you're doing.)",
           "type": "string",
           "enum": ["enabled", "disabled"],
           "default": "disabled"
@@ -98,8 +106,15 @@
       "pattern": "^-----BEGIN "
     },
     "httpToHttpsRedirect": {
-      "description": "Redirect users from HTTP to HTTPS.",
-      "type": "boolean"
+      "description":
+        "Redirect users from HTTP to HTTPS. Accepted values are \"on\", \"off\", and \"load-balanced\" (boolean values true and false are also accepted and equivalent to \"on\" and \"off\" respectively). If \"load-balanced\" then additionally we use \"X-Forwarded-Proto\" to determine if on HTTP.",
+      "anyOf": [{ "type": "string", "enum": ["on", "off", "load-balanced"] }, { "type": "boolean" }],
+      "default": "off"
+    },
+    "httpStrictTransportSecurity": {
+      "description": "The value of the Strict-Transport-Security HTTP header sent by Sourcegraph, if non-empty",
+      "type": "string",
+      "examples": ["max-age=8640000"]
     },
     "corsOrigin": {
       "description": "Value for the Access-Control-Allow-Origin header returned with all requests.",
@@ -271,11 +286,6 @@
       "type": "integer",
       "default": 1
     },
-    "ssoUserHeader": {
-      "description":
-        "Header injected by an SSO proxy to indicate the logged in user.\n\nDEPRECATED: Use auth.provider==\"http-header\" and auth.userIdentityHTTPHeader instead.",
-      "type": "string"
-    },
     "oidcProvider": {
       "description":
         "The URL of the OpenID Connect Provider\n\nDEPRECATED: Use auth.provider==\"openidconnect\" and auth.openidconnect's \"issuer\" property instead.",
@@ -294,11 +304,6 @@
     "oidcEmailDomain": {
       "description":
         "Whitelisted email domain for logins, e.g. 'mycompany.com'\n\nDEPRECATED: Use auth.provider==\"openidconnect\" and auth.openidconnect's \"requireEmailDomain\" property instead.",
-      "type": "string"
-    },
-    "oidcOverrideToken": {
-      "description":
-        "Token to circumvent OIDC layer (testing only)\n\nDEPRECATED: Use auth.provider==\"openidconnect\" and auth.openidconnect's \"overrideToken\" property instead.",
       "type": "string"
     },
     "samlIDProviderMetadataURL": {
@@ -321,7 +326,7 @@
         "JSON array of custom search scopes (e.g., [{\"name\":\"Text Files\",\"value\":\"file:\\.txt$\"}]).\n\nDEPRECATED: Values should be moved to the \"settings\" field's \"search.scopes\" property.",
       "type": "array",
       "items": {
-        "$ref": "https://sourcegraph.com/v1/settings.schema.json#/definitions/SearchScope"
+        "$ref": "./settings.schema.json#/definitions/SearchScope"
       }
     },
     "htmlHeadTop": {
@@ -345,11 +350,6 @@
         "The maximum number of repositories to search across. The user is prompted to narrow their query if exceeded. The value -1 means unlimited.",
       "type": "integer",
       "default": 500
-    },
-    "adminUsernames": {
-      "description":
-        "Space-separated list of usernames that indicates which users will be treated as instance admins\n\nDEPRECATED: On new site installations, admins can designate other users as admins in the site admin area. That is the preferred way to designate admins. This configuration option will be removed in a future version. All users named in this configuration setting will be designated as admins, so if the server has been run with this option once, this setting can be safely removed without loss of admin access to the named users.",
-      "type": "string"
     },
     "executeGradleOriginalRootPaths": {
       "description":
@@ -375,19 +375,37 @@
       "type": "string"
     },
     "secretKey": {
-      "description": "A secret key for this site, used for generating links for inviting users to organizations.",
+      "description":
+        "A base64-encoded secret key for this site, used for generating links to invite users to organizations. If you have `openssl` installed, you can generate a valid key by running `openssl rand -base64 32`.",
       "type": "string"
     },
     "auth.provider": {
       "description":
-        "The authentication provider to use for identifying and signing in users. Defaults to built-in authentication.",
+        "The authentication provider to use for identifying and signing in users. Defaults to \"builtin\" authentication.\n\nDEPRECATED: Use \"auth.providers\" instead. During the deprecation period (before this property is removed), provider set here will be added as an entry in \"auth.providers\".",
       "default": "builtin",
       "type": "string",
       "enum": ["builtin", "openidconnect", "saml", "http-header"]
     },
+    "auth.providers": {
+      "description":
+        "The authentication providers to use for identifying and signing in users.\n\nOnly one authentication provider is supported. If you set the deprecated field \"auth.provider\", then that value is used as the authentication provider, and you can't set another one here.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "oneOf": [
+          { "$ref": "#/definitions/BuiltinAuthProvider" },
+          { "$ref": "#/definitions/SAMLAuthProvider" },
+          { "$ref": "#/definitions/OpenIDConnectAuthProvider" },
+          { "$ref": "#/definitions/HTTPHeaderAuthProvider" }
+        ],
+        "!go": {
+          "taggedUnionType": true
+        }
+      }
+    },
     "auth.allowSignup": {
       "description":
-        "Allows new visitors to sign up for accounts. The sign-up page will be enabled and accessible to all visitors.\n\nSECURITY: If the site has no users (i.e., during initial setup), it will always allow the first user to sign up and become site admin **without any approval** (first user to sign up becomes the admin).\n\nRequires auth.provider == \"builtin\".",
+        "Allows new visitors to sign up for accounts. The sign-up page will be enabled and accessible to all visitors.\n\nSECURITY: If the site has no users (i.e., during initial setup), it will always allow the first user to sign up and become site admin **without any approval** (first user to sign up becomes the admin).\n\nRequires auth.provider == \"builtin\"\n\nDEPRECATED: Use \"auth.providers\" with an entry of the form {\"type\": \"builtin\", \"allowSignup\": true} instead.",
       "type": "boolean",
       "default": false
     },
@@ -399,7 +417,7 @@
     },
     "auth.public": {
       "description":
-        "Allows anonymous visitors full read access to repositories, code files, search, and other data (except site configuration).\n\nSECURITY WARNING: If you enable this, you must ensure that only authorized users can access the server (using firewall rules or an external proxy, for example).\n\nRequires auth.provider == \"builtin\".",
+        "Allows anonymous visitors full read access to repositories, code files, search, and other data (except site configuration).\n\nSECURITY WARNING: If you enable this, you must ensure that only authorized users can access the server (using firewall rules or an external proxy, for example).\n\nRequires usage of the builtin authentication provider.",
       "type": "boolean",
       "default": false
     },
@@ -411,7 +429,7 @@
     },
     "auth.userIdentityHTTPHeader": {
       "description":
-        "The name (case-insensitive) of an HTTP header whose value is taken to be the username of the client requesting the page. Set this value when using an HTTP proxy that authenticates requests, and you don't want the extra configurability of the other authentication methods.\n\nRequires auth.provider==\"http-header\".",
+        "The name (case-insensitive) of an HTTP header whose value is taken to be the username of the client requesting the page. Set this value when using an HTTP proxy that authenticates requests, and you don't want the extra configurability of the other authentication methods.\n\nRequires auth.provider==\"http-header\".\n\nDEPRECATED: Use \"auth.providers\" with an entry of the form {\"type\": \"http-header\", \"usernameHeader\": \"...\"} instead.",
       "type": "string"
     },
     "email.smtp": {
@@ -438,10 +456,12 @@
         "properties": {
           "language": {
             "description": "Name of the language mode for the langserver (e.g. go, java)",
-            "type": "string"
+            "type": "string",
+            "examples": ["go", "java", "javascript", "typescript", "php", "python"]
           },
           "address": {
-            "description": "TCP address of the language server.",
+            "description":
+              "TCP address of the language server. Required for Sourcegraph Server; do not set for Sourcegraph Data Center.",
             "type": "string",
             "pattern": "^tcp://",
             "format": "uri"
@@ -505,12 +525,12 @@
             }
           }
         },
-        "required": ["language", "address"]
+        "required": ["language"]
       }
     },
     "settings": {
       "description": "Site settings. Organization and user settings override site settings.",
-      "$ref": "https://sourcegraph.com/v1/settings.schema.json#"
+      "$ref": "./settings.schema.json#"
     }
   },
   "definitions": {
@@ -810,12 +830,34 @@
         }
       }
     },
+    "BuiltinAuthProvider": {
+      "description": "Configures the builtin username-password authentication provider.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "builtin"
+        },
+        "allowSignup": {
+          "description":
+            "Allows new visitors to sign up for accounts. The sign-up page will be enabled and accessible to all visitors.\n\nSECURITY: If the site has no users (i.e., during initial setup), it will always allow the first user to sign up and become site admin **without any approval** (first user to sign up becomes the admin).",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "OpenIDConnectAuthProvider": {
       "description": "Configures the OpenID Connect authentication provider for SSO.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["issuer", "clientID", "clientSecret"],
+      "required": ["type", "issuer", "clientID", "clientSecret"],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "openidconnect"
+        },
         "issuer": {
           "description": "The URL of the OpenID Connect issuer.\n\nFor Google Apps: https://accounts.google.com",
           "type": "string",
@@ -842,7 +884,7 @@
         },
         "overrideToken": {
           "description":
-            "(For testing and development only) A token used to circumvent the OpenID Connect authentication layer.",
+            "(For testing and development only) A token used to circumvent the OpenID Connect authentication layer.\n\nDEPRECATED: This override-auth feature will be removed, and no replacement is planned.",
           "type": "string"
         }
       }
@@ -851,8 +893,12 @@
       "description": "Configures the SAML authentication provider for SSO.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["serviceProviderCertificate", "serviceProviderPrivateKey"],
+      "required": ["type", "serviceProviderCertificate", "serviceProviderPrivateKey"],
       "properties": {
+        "type": {
+          "type": "string",
+          "const": "saml"
+        },
         "identityProviderMetadataURL": {
           "description":
             "SAML Identity Provider metadata URL (for dynamic configuration of the SAML Service Provider).",
@@ -876,6 +922,24 @@
             "SAML Service Provider private key in PKCS#8 encoding (begins with \"-----BEGIN PRIVATE KEY-----\").",
           "type": "string",
           "pattern": "^-----BEGIN PRIVATE KEY-----\n"
+        }
+      }
+    },
+    "HTTPHeaderAuthProvider": {
+      "description":
+        "Configures the HTTP header authentication provider (which authenticates users by consulting an HTTP request header set by an authentication proxy such as https://github.com/bitly/oauth2_proxy).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "usernameHeader"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "http-header"
+        },
+        "usernameHeader": {
+          "description":
+            "The name (case-insensitive) of an HTTP header whose value is taken to be the username of the client requesting the page. Set this value when using an HTTP proxy that authenticates requests, and you don't want the extra configurability of the other authentication methods.\n\nRequires auth.provider==\"http-header\".",
+          "type": "string"
         }
       }
     },
@@ -911,6 +975,39 @@
           "description": "The HELO domain to provide to the SMTP server (if needed).",
           "type": "string"
         }
+      }
+    }
+  },
+  "$comment": "Allow multiple auth.providers only if experimentalFeatures.multipleAuthProviders is enabled.",
+  "if": {
+    "type": "object",
+    "properties": {
+      "experimentalFeatures": {
+        "type": "object",
+        "required": ["multipleAuthProviders"],
+        "properties": {
+          "multipleAuthProviders": {
+            "type": "string",
+            "const": "enabled"
+          }
+        }
+      }
+    }
+  },
+  "then": {
+    "type": "object",
+    "properties": {
+      "auth.providers": {
+        "type": "array"
+      }
+    }
+  },
+  "else": {
+    "type": "object",
+    "properties": {
+      "auth.providers": {
+        "type": "array",
+        "maxItems": 1
       }
     }
   }

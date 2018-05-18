@@ -1,5 +1,11 @@
 package p
 
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+)
+
 // AWSCodeCommitConnection
 type AWSCodeCommitConnection struct {
 	AccessKeyID                 string `json:"accessKeyID"`
@@ -7,6 +13,49 @@ type AWSCodeCommitConnection struct {
 	Region                      string `json:"region"`
 	RepositoryPathPattern       string `json:"repositoryPathPattern,omitempty"`
 	SecretAccessKey             string `json:"secretAccessKey"`
+}
+
+// AuthProviders
+type AuthProviders struct {
+	Builtin       *BuiltinAuthProvider
+	Saml          *SAMLAuthProvider
+	Openidconnect *OpenIDConnectAuthProvider
+	HttpHeader    *HTTPHeaderAuthProvider
+}
+
+func (v AuthProviders) MarshalJSON() ([]byte, error) {
+	if v.Builtin != nil {
+		return json.Marshal(v.Builtin)
+	}
+	if v.Saml != nil {
+		return json.Marshal(v.Saml)
+	}
+	if v.Openidconnect != nil {
+		return json.Marshal(v.Openidconnect)
+	}
+	if v.HttpHeader != nil {
+		return json.Marshal(v.HttpHeader)
+	}
+	return nil, errors.New("tagged union type must have exactly 1 non-nil field value")
+}
+func (v *AuthProviders) UnmarshalJSON(data []byte) error {
+	var d struct {
+		DiscriminantProperty string `json:"type"`
+	}
+	if err := json.Unmarshal(data, &d); err != nil {
+		return err
+	}
+	switch d.DiscriminantProperty {
+	case "builtin":
+		return json.Unmarshal(data, &v.Builtin)
+	case "http-header":
+		return json.Unmarshal(data, &v.HttpHeader)
+	case "openidconnect":
+		return json.Unmarshal(data, &v.Openidconnect)
+	case "saml":
+		return json.Unmarshal(data, &v.Saml)
+	}
+	return fmt.Errorf("tagged union type must have a %q property whose value is one of %s", "type", []string{"builtin", "saml", "openidconnect", "http-header"})
 }
 
 // BitbucketServerConnection
@@ -21,12 +70,19 @@ type BitbucketServerConnection struct {
 	Username                    string `json:"username,omitempty"`
 }
 
+// BuiltinAuthProvider Configures the builtin username-password authentication provider.
+type BuiltinAuthProvider struct {
+	AllowSignup bool   `json:"allowSignup,omitempty"`
+	Type        string `json:"type"`
+}
+
 // ExperimentalFeatures Experimental features to enable or disable. Features that are now enabled by default are marked as deprecated.
 type ExperimentalFeatures struct {
+	EnhancedSAML           string `json:"enhancedSAML,omitempty"`
 	HostSurveysLocally     string `json:"hostSurveysLocally,omitempty"`
 	JumpToDefOSSIndex      string `json:"jumpToDefOSSIndex,omitempty"`
+	MultipleAuthProviders  string `json:"multipleAuthProviders,omitempty"`
 	SearchTimeoutParameter string `json:"searchTimeoutParameter,omitempty"`
-	ShowMissingRepos       string `json:"showMissingRepos,omitempty"`
 }
 
 // GitHubConnection
@@ -61,9 +117,15 @@ type GitoliteConnection struct {
 	Prefix                     string `json:"prefix"`
 }
 
+// HTTPHeaderAuthProvider Configures the HTTP header authentication provider (which authenticates users by consulting an HTTP request header set by an authentication proxy such as https://github.com/bitly/oauth2_proxy).
+type HTTPHeaderAuthProvider struct {
+	Type           string `json:"type"`
+	UsernameHeader string `json:"usernameHeader"`
+}
+
 // Langservers
 type Langservers struct {
-	Address               string                 `json:"address"`
+	Address               string                 `json:"address,omitempty"`
 	Disabled              bool                   `json:"disabled,omitempty"`
 	InitializationOptions map[string]interface{} `json:"initializationOptions,omitempty"`
 	Language              string                 `json:"language"`
@@ -93,6 +155,7 @@ type OpenIDConnectAuthProvider struct {
 	Issuer             string `json:"issuer"`
 	OverrideToken      string `json:"overrideToken,omitempty"`
 	RequireEmailDomain string `json:"requireEmailDomain,omitempty"`
+	Type               string `json:"type"`
 }
 
 // Phabricator
@@ -122,6 +185,7 @@ type SAMLAuthProvider struct {
 	IdentityProviderMetadataURL string `json:"identityProviderMetadataURL,omitempty"`
 	ServiceProviderCertificate  string `json:"serviceProviderCertificate"`
 	ServiceProviderPrivateKey   string `json:"serviceProviderPrivateKey"`
+	Type                        string `json:"type"`
 }
 
 // SMTPServerConfig The SMTP server used to send transactional emails (such as email verifications, reset-password emails, and notifications).
@@ -163,12 +227,12 @@ type Settings struct {
 
 // SiteConfiguration Configuration for a Sourcegraph site.
 type SiteConfiguration struct {
-	AdminUsernames                    string                       `json:"adminUsernames,omitempty"`
 	AppURL                            string                       `json:"appURL,omitempty"`
 	AuthAllowSignup                   bool                         `json:"auth.allowSignup,omitempty"`
 	AuthDisableAccessTokens           bool                         `json:"auth.disableAccessTokens,omitempty"`
 	AuthOpenIDConnect                 *OpenIDConnectAuthProvider   `json:"auth.openIDConnect,omitempty"`
 	AuthProvider                      string                       `json:"auth.provider,omitempty"`
+	AuthProviders                     []AuthProviders              `json:"auth.providers,omitempty"`
 	AuthPublic                        bool                         `json:"auth.public,omitempty"`
 	AuthSaml                          *SAMLAuthProvider            `json:"auth.saml,omitempty"`
 	AuthUserIdentityHTTPHeader        string                       `json:"auth.userIdentityHTTPHeader,omitempty"`
@@ -203,7 +267,8 @@ type SiteConfiguration struct {
 	HtmlBodyTop                       string                       `json:"htmlBodyTop,omitempty"`
 	HtmlHeadBottom                    string                       `json:"htmlHeadBottom,omitempty"`
 	HtmlHeadTop                       string                       `json:"htmlHeadTop,omitempty"`
-	HttpToHttpsRedirect               bool                         `json:"httpToHttpsRedirect,omitempty"`
+	HttpStrictTransportSecurity       string                       `json:"httpStrictTransportSecurity,omitempty"`
+	HttpToHttpsRedirect               interface{}                  `json:"httpToHttpsRedirect,omitempty"`
 	Langservers                       []*Langservers               `json:"langservers,omitempty"`
 	LightstepAccessToken              string                       `json:"lightstepAccessToken,omitempty"`
 	LightstepProject                  string                       `json:"lightstepProject,omitempty"`
@@ -212,7 +277,6 @@ type SiteConfiguration struct {
 	OidcClientID                      string                       `json:"oidcClientID,omitempty"`
 	OidcClientSecret                  string                       `json:"oidcClientSecret,omitempty"`
 	OidcEmailDomain                   string                       `json:"oidcEmailDomain,omitempty"`
-	OidcOverrideToken                 string                       `json:"oidcOverrideToken,omitempty"`
 	OidcProvider                      string                       `json:"oidcProvider,omitempty"`
 	Phabricator                       []*Phabricator               `json:"phabricator,omitempty"`
 	PhabricatorURL                    string                       `json:"phabricatorURL,omitempty"`
@@ -229,7 +293,6 @@ type SiteConfiguration struct {
 	SecretKey                         string                       `json:"secretKey,omitempty"`
 	Settings                          *Settings                    `json:"settings,omitempty"`
 	SiteID                            string                       `json:"siteID,omitempty"`
-	SsoUserHeader                     string                       `json:"ssoUserHeader,omitempty"`
 	TlsLetsencrypt                    string                       `json:"tls.letsencrypt,omitempty"`
 	TlsCert                           string                       `json:"tlsCert,omitempty"`
 	TlsKey                            string                       `json:"tlsKey,omitempty"`
