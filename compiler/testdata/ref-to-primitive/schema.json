@@ -1,0 +1,18 @@
+{
+  "title": "ref-to-primitive",
+  "type": "object",
+  "required": ["d", "dArray"],
+  "properties": {
+	"a": { "$ref": "#/definitions/A/properties/b" },
+	"b": { "$ref": "#/definitions/B" }
+  },
+  "definitions": {
+	"A": {
+	  "type": "object",
+	  "properties": {
+		"b": {"description": "d", "type": "string"}
+	  }
+	},
+	"B": {"description": "d", "type": "string"}
+  }
+}
