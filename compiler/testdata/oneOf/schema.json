@@ -23,7 +23,7 @@
 	  "type": "object",
 	  "required": ["type"],
 	  "properties": {
-		"type": { "type": "string", "enum": ["b"] },
+		"type": { "type": "string", "const": "b" },
 		"b": { "type": "string" }
 	  }
 	},
@@ -31,7 +31,7 @@
 	  "type": "object",
 	  "required": ["type"],
 	  "properties": {
-		"type": { "type": "string", "enum": ["c"] },
+		"type": { "type": "string", "const": "c", "enum": ["c"] },
 		"c": { "type": "boolean" }
 	  }
 	},
@@ -39,7 +39,7 @@
 	  "type": "object",
 	  "required": ["type"],
 	  "properties": {
-		"type": { "type": "string", "enum": ["d"] },
+		"type": { "type": "string", "enum": ["d", "d"] },
 		"d": { "type": "number" }
 	  }
 	}
