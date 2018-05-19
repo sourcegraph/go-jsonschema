@@ -1,0 +1,12 @@
+{
+  "title": "go-pointer",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "type": "string",
+	  "!go": {
+		"pointer": true
+	  }
+	}
+  }
+}
