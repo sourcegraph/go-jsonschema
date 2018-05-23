@@ -6,7 +6,6 @@ import (
 	"fmt"
 )
 
-// A
 type A struct {
 	B *B
 	C *C
@@ -43,25 +42,20 @@ func (v *A) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("tagged union type must have a %q property whose value is one of %s", "type", []string{"b", "c", "d"})
 }
 
-// B
 type B struct {
 	B    string `json:"b,omitempty"`
 	Type string `json:"type"`
 }
-
-// C
 type C struct {
 	C    bool   `json:"c,omitempty"`
 	Type string `json:"type"`
 }
-
-// D
 type D struct {
 	D    float64 `json:"d,omitempty"`
 	Type string  `json:"type"`
 }
 
-// OneOf oneOf to implement a tagged union type
+// OneOf description: oneOf to implement a tagged union type
 type OneOf struct {
 	A []A `json:"a,omitempty"`
 }

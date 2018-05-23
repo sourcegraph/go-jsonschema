@@ -6,7 +6,6 @@ import (
 	"fmt"
 )
 
-// AWSCodeCommitConnection
 type AWSCodeCommitConnection struct {
 	AccessKeyID                 string `json:"accessKeyID"`
 	InitialRepositoryEnablement bool   `json:"initialRepositoryEnablement,omitempty"`
@@ -14,8 +13,6 @@ type AWSCodeCommitConnection struct {
 	RepositoryPathPattern       string `json:"repositoryPathPattern,omitempty"`
 	SecretAccessKey             string `json:"secretAccessKey"`
 }
-
-// AuthProviders
 type AuthProviders struct {
 	Builtin       *BuiltinAuthProvider
 	Saml          *SAMLAuthProvider
@@ -58,7 +55,6 @@ func (v *AuthProviders) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("tagged union type must have a %q property whose value is one of %s", "type", []string{"builtin", "saml", "openidconnect", "http-header"})
 }
 
-// BitbucketServerConnection
 type BitbucketServerConnection struct {
 	Certificate                 string `json:"certificate,omitempty"`
 	GitURLType                  string `json:"gitURLType,omitempty"`
@@ -70,13 +66,13 @@ type BitbucketServerConnection struct {
 	Username                    string `json:"username,omitempty"`
 }
 
-// BuiltinAuthProvider Configures the builtin username-password authentication provider.
+// BuiltinAuthProvider description: Configures the builtin username-password authentication provider.
 type BuiltinAuthProvider struct {
 	AllowSignup bool   `json:"allowSignup,omitempty"`
 	Type        string `json:"type"`
 }
 
-// ExperimentalFeatures Experimental features to enable or disable. Features that are now enabled by default are marked as deprecated.
+// ExperimentalFeatures description: Experimental features to enable or disable. Features that are now enabled by default are marked as deprecated.
 type ExperimentalFeatures struct {
 	EnhancedSAML           string `json:"enhancedSAML,omitempty"`
 	HostSurveysLocally     string `json:"hostSurveysLocally,omitempty"`
@@ -84,8 +80,6 @@ type ExperimentalFeatures struct {
 	MultipleAuthProviders  string `json:"multipleAuthProviders,omitempty"`
 	SearchTimeoutParameter string `json:"searchTimeoutParameter,omitempty"`
 }
-
-// GitHubConnection
 type GitHubConnection struct {
 	Certificate                 string   `json:"certificate,omitempty"`
 	GitURLType                  string   `json:"gitURLType,omitempty"`
@@ -97,8 +91,6 @@ type GitHubConnection struct {
 	Token                       string   `json:"token"`
 	Url                         string   `json:"url,omitempty"`
 }
-
-// GitLabConnection
 type GitLabConnection struct {
 	Certificate                 string   `json:"certificate,omitempty"`
 	GitURLType                  string   `json:"gitURLType,omitempty"`
@@ -108,8 +100,6 @@ type GitLabConnection struct {
 	Token                       string   `json:"token"`
 	Url                         string   `json:"url"`
 }
-
-// GitoliteConnection
 type GitoliteConnection struct {
 	Blacklist                  string `json:"blacklist,omitempty"`
 	Host                       string `json:"host"`
@@ -117,13 +107,11 @@ type GitoliteConnection struct {
 	Prefix                     string `json:"prefix"`
 }
 
-// HTTPHeaderAuthProvider Configures the HTTP header authentication provider (which authenticates users by consulting an HTTP request header set by an authentication proxy such as https://github.com/bitly/oauth2_proxy).
+// HTTPHeaderAuthProvider description: Configures the HTTP header authentication provider (which authenticates users by consulting an HTTP request header set by an authentication proxy such as https://github.com/bitly/oauth2_proxy).
 type HTTPHeaderAuthProvider struct {
 	Type           string `json:"type"`
 	UsernameHeader string `json:"usernameHeader"`
 }
-
-// Langservers
 type Langservers struct {
 	Address               string                 `json:"address,omitempty"`
 	Disabled              bool                   `json:"disabled,omitempty"`
@@ -131,8 +119,6 @@ type Langservers struct {
 	Language              string                 `json:"language"`
 	Metadata              *Metadata              `json:"metadata,omitempty"`
 }
-
-// Links
 type Links struct {
 	Blob       string `json:"blob,omitempty"`
 	Commit     string `json:"commit,omitempty"`
@@ -140,7 +126,7 @@ type Links struct {
 	Tree       string `json:"tree,omitempty"`
 }
 
-// Metadata Language server metadata. Used to populate various UI elements.
+// Metadata description: Language server metadata. Used to populate various UI elements.
 type Metadata struct {
 	DocsURL      string `json:"docsURL,omitempty"`
 	Experimental bool   `json:"experimental,omitempty"`
@@ -148,7 +134,7 @@ type Metadata struct {
 	IssuesURL    string `json:"issuesURL,omitempty"`
 }
 
-// OpenIDConnectAuthProvider Configures the OpenID Connect authentication provider for SSO.
+// OpenIDConnectAuthProvider description: Configures the OpenID Connect authentication provider for SSO.
 type OpenIDConnectAuthProvider struct {
 	ClientID           string `json:"clientID"`
 	ClientSecret       string `json:"clientSecret"`
@@ -157,21 +143,15 @@ type OpenIDConnectAuthProvider struct {
 	RequireEmailDomain string `json:"requireEmailDomain,omitempty"`
 	Type               string `json:"type"`
 }
-
-// Phabricator
 type Phabricator struct {
 	Repos []*Repos `json:"repos,omitempty"`
 	Token string   `json:"token,omitempty"`
 	Url   string   `json:"url,omitempty"`
 }
-
-// Repos
 type Repos struct {
 	Callsign string `json:"callsign"`
 	Path     string `json:"path"`
 }
-
-// Repository
 type Repository struct {
 	Links *Links `json:"links,omitempty"`
 	Path  string `json:"path"`
@@ -179,7 +159,7 @@ type Repository struct {
 	Url   string `json:"url"`
 }
 
-// SAMLAuthProvider Configures the SAML authentication provider for SSO.
+// SAMLAuthProvider description: Configures the SAML authentication provider for SSO.
 type SAMLAuthProvider struct {
 	IdentityProviderMetadata    string `json:"identityProviderMetadata,omitempty"`
 	IdentityProviderMetadataURL string `json:"identityProviderMetadataURL,omitempty"`
@@ -188,7 +168,7 @@ type SAMLAuthProvider struct {
 	Type                        string `json:"type"`
 }
 
-// SMTPServerConfig The SMTP server used to send transactional emails (such as email verifications, reset-password emails, and notifications).
+// SMTPServerConfig description: The SMTP server used to send transactional emails (such as email verifications, reset-password emails, and notifications).
 type SMTPServerConfig struct {
 	Authentication string `json:"authentication"`
 	Domain         string `json:"domain,omitempty"`
@@ -197,8 +177,6 @@ type SMTPServerConfig struct {
 	Port           int    `json:"port"`
 	Username       string `json:"username,omitempty"`
 }
-
-// SearchSavedQueries
 type SearchSavedQueries struct {
 	Description    string `json:"description"`
 	Key            string `json:"key"`
@@ -207,8 +185,6 @@ type SearchSavedQueries struct {
 	Query          string `json:"query"`
 	ShowOnHomepage bool   `json:"showOnHomepage,omitempty"`
 }
-
-// SearchScope
 type SearchScope struct {
 	Description string `json:"description,omitempty"`
 	Id          string `json:"id,omitempty"`
@@ -216,7 +192,7 @@ type SearchScope struct {
 	Value       string `json:"value"`
 }
 
-// Settings Configuration settings for users and organizations on Sourcegraph.
+// Settings description: Configuration settings for users and organizations on Sourcegraph.
 type Settings struct {
 	Motd                   []string                  `json:"motd,omitempty"`
 	NotificationsSlack     *SlackNotificationsConfig `json:"notifications.slack,omitempty"`
@@ -225,7 +201,7 @@ type Settings struct {
 	SearchScopes           []*SearchScope            `json:"search.scopes,omitempty"`
 }
 
-// SiteConfiguration Configuration for a Sourcegraph site.
+// SiteConfiguration description: Configuration for a Sourcegraph site.
 type SiteConfiguration struct {
 	AppURL                            string                       `json:"appURL,omitempty"`
 	AuthAllowSignup                   bool                         `json:"auth.allowSignup,omitempty"`
@@ -300,7 +276,7 @@ type SiteConfiguration struct {
 	UseJaeger                         bool                         `json:"useJaeger,omitempty"`
 }
 
-// SlackNotificationsConfig Configuration for sending notifications to Slack.
+// SlackNotificationsConfig description: Configuration for sending notifications to Slack.
 type SlackNotificationsConfig struct {
 	WebhookURL string `json:"webhookURL"`
 }

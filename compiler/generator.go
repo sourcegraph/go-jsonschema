@@ -110,9 +110,7 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) ([]ast.Decl, []*as
 		Type: &ast.StructType{Fields: &ast.FieldList{List: fields}},
 	}
 	return []ast.Decl{&ast.GenDecl{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{{Text: "\n// " + docForSchema(schema, goName)}},
-		},
+		Doc:   docForSchema(schema, goName),
 		Tok:   token.TYPE,
 		Specs: []ast.Spec{typeSpec},
 	}}, nil, nil
@@ -182,12 +180,17 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, error) {
 	return ast.NewIdent(goName), nil
 }
 
-func docForSchema(schema *jsonschema.Schema, goName string) string {
+func docForSchema(schema *jsonschema.Schema, goName string) *ast.CommentGroup {
+	if schema.Description == nil {
+		return nil
+	}
 	doc := goName
 	if schema.Description != nil {
-		doc += " " + *schema.Description
+		doc += " description: " + *schema.Description
 	}
-	return doc
+	return &ast.CommentGroup{
+		List: []*ast.Comment{{Text: "\n// " + doc}},
+	}
 }
 
 func importSpecs(paths ...string) []*ast.ImportSpec {

@@ -1,6 +1,5 @@
 package p
 
-// SearchSavedQueries
 type SearchSavedQueries struct {
 	Description    string `json:"description"`
 	Key            string `json:"key"`
@@ -9,8 +8,6 @@ type SearchSavedQueries struct {
 	Query          string `json:"query"`
 	ShowOnHomepage bool   `json:"showOnHomepage,omitempty"`
 }
-
-// SearchScope
 type SearchScope struct {
 	Description string `json:"description,omitempty"`
 	Id          string `json:"id,omitempty"`
@@ -18,7 +15,7 @@ type SearchScope struct {
 	Value       string `json:"value"`
 }
 
-// Settings Configuration settings for users and organizations on Sourcegraph.
+// Settings description: Configuration settings for users and organizations on Sourcegraph.
 type Settings struct {
 	Motd                   []string                  `json:"motd,omitempty"`
 	NotificationsSlack     *SlackNotificationsConfig `json:"notifications.slack,omitempty"`
@@ -27,7 +24,7 @@ type Settings struct {
 	SearchScopes           []*SearchScope            `json:"search.scopes,omitempty"`
 }
 
-// SlackNotificationsConfig Configuration for sending notifications to Slack.
+// SlackNotificationsConfig description: Configuration for sending notifications to Slack.
 type SlackNotificationsConfig struct {
 	WebhookURL string `json:"webhookURL"`
 }
