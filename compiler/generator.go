@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"bytes"
 	"fmt"
 	"go/ast"
 	"go/token"
@@ -189,8 +190,21 @@ func docForSchema(schema *jsonschema.Schema, goName string) *ast.CommentGroup {
 		doc += " description: " + *schema.Description
 	}
 	return &ast.CommentGroup{
-		List: []*ast.Comment{{Text: "\n// " + doc}},
+		List: []*ast.Comment{{Text: "\n" + lineComments(doc)}},
 	}
+}
+
+func lineComments(s string) string {
+	var buf bytes.Buffer
+	buf.WriteString("// ")
+	for _, c := range s {
+		if c == '\n' {
+			buf.WriteString("\n// ")
+		} else {
+			buf.WriteRune(c)
+		}
+	}
+	return buf.String()
 }
 
 func importSpecs(paths ...string) []*ast.ImportSpec {
