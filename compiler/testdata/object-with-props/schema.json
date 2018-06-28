@@ -1,0 +1,10 @@
+{
+  "title": "object-with-props",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+	"a": {
+	  "type": "string"
+	}
+  }
+}
