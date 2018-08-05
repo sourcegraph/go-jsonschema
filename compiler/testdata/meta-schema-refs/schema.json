@@ -1,0 +1,8 @@
+{
+  "title": "meta-schema-refs",
+  "type": "object",
+  "properties": {
+	"a": { "$ref": "http://json-schema.org/draft-07/schema#" },
+	"b": { "$ref": "https://json-schema.org/draft-07/schema" }
+  }
+}
