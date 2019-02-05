@@ -26,6 +26,7 @@ type Schema struct {
 	Description          *string                      `json:"description,omitempty"`
 	Else                 *Schema                      `json:"else,omitempty"`
 	Enum                 EnumList                     `json:"enum,omitempty"`
+	Examples             []interface{}                `json:"examples,omitempty"`
 	ExclusiveMaximum     *float64                     `json:"exclusiveMaximum,omitempty"`
 	ExclusiveMinimum     *float64                     `json:"exclusiveMinimum,omitempty"`
 	Format               *Format                      `json:"format,omitempty"`
