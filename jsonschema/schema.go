@@ -53,6 +53,11 @@ type Schema struct {
 	Type                 PrimitiveTypeList            `json:"type,omitempty"`
 	UniqueItems          *bool                        `json:"uniqueItems,omitempty"`
 
+	// Raw is the raw JSON document that this schema was unmarshaled from, if any. It can be used to
+	// retrieve and set custom properties (such as for extensions to JSON Schema). It is omitted
+	// from the JSON encoding of this value.
+	Raw *json.RawMessage `json:"-"`
+
 	IsEmpty   bool `json:"-"` // the schema is "true"
 	IsNegated bool `json:"-"` // the schema is "false"
 
@@ -92,16 +97,18 @@ func (s *Schema) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (s *Schema) UnmarshalJSON(data []byte) error {
+	raw := (*json.RawMessage)(&data)
 	switch {
 	case bytes.Equal(data, trueBytes):
-		*s = Schema{IsEmpty: true}
+		*s = Schema{IsEmpty: true, Raw: raw}
 	case bytes.Equal(data, falseBytes):
-		*s = Schema{IsNegated: true}
+		*s = Schema{IsNegated: true, Raw: raw}
 	default:
 		type schema2 Schema
 		if err := json.Unmarshal(data, (*schema2)(s)); err != nil {
 			return errors.WithMessage(err, "failed to unmarshal JSON Schema")
 		}
+		s.Raw = raw
 	}
 	return nil
 }

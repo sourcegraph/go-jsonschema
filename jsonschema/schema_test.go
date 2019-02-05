@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
+	"reflect"
 	"testing"
 
 	"github.com/sourcegraph/go-jsonschema/internal/testutil"
@@ -30,6 +31,28 @@ func TestSample(t *testing.T) {
 	if !bytes.Equal(marshaled, data) {
 		t.Errorf("got %q, want %q", marshaled, data)
 	}
+}
+
+func TestRaw(t *testing.T) {
+	t.Run("marshal", func(t *testing.T) {
+		b, err := json.Marshal(Schema{Comment: strptr("c")})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := `{"$comment":"c"}`; string(b) != want {
+			t.Errorf("got %s, want %s", b, want)
+		}
+	})
+	t.Run("unmarshal", func(t *testing.T) {
+		input := []byte(`{"$comment":"c"}`)
+		var o Schema
+		if err := json.Unmarshal([]byte(input), &o); err != nil {
+			t.Fatal(err)
+		}
+		if want := (Schema{Comment: strptr("c"), Raw: (*json.RawMessage)(&input)}); !reflect.DeepEqual(o, want) {
+			t.Errorf("got %+v, want %+v", o, want)
+		}
+	})
 }
 
 func strptr(s string) *string { return &s }
