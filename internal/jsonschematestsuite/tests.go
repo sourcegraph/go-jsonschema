@@ -2,6 +2,7 @@ package jsonschematestsuite
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -64,6 +65,9 @@ type TestCase struct {
 // suite.
 func Files(internalDir string) (files []File, err error) {
 	officialTestSuiteDir := filepath.Join(internalDir, "jsonschematestsuite", "testdata", "official")
+	if _, err := os.Stat(filepath.Join(officialTestSuiteDir, "tests")); os.IsNotExist(err) {
+		return nil, fmt.Errorf("missing git submodule, run \"git submodule init && git submodule update\": %w", err)
+	}
 	for _, root := range []string{
 		filepath.Join(internalDir, "jsonschematestsuite", "testdata"),
 		filepath.Join(officialTestSuiteDir, "tests", "draft7"),
@@ -71,6 +75,9 @@ func Files(internalDir string) (files []File, err error) {
 		err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 			if path == officialTestSuiteDir {
 				return filepath.SkipDir
+			}
+			if err != nil {
+				return err
 			}
 			if !info.Mode().IsRegular() || filepath.Ext(info.Name()) != ".json" {
 				return nil
