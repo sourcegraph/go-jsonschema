@@ -99,6 +99,7 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) (decls []ast.Decl,
 			JSONName: name,
 			Field: &ast.Field{
 				Names: []*ast.Ident{ast.NewIdent(goName)},
+				Doc:   docForSchema(prop, goName),
 				Type:  typeExpr,
 				Tag: &ast.BasicLit{
 					Kind:  token.STRING,

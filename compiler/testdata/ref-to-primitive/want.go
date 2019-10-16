@@ -1,6 +1,7 @@
 package p
 
 type A struct {
+// B description: d
 	B string `json:"b,omitempty"`
 }
 type RefToPrimitive struct {
