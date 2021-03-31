@@ -7,7 +7,6 @@ import (
 	"go/ast"
 	"go/format"
 	"go/token"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -20,7 +19,7 @@ import (
 var writeWant = flag.Bool("test.write-want", false, "(over)write want.go files in test cases with output")
 
 func TestCompiler(t *testing.T) {
-	entries, err := ioutil.ReadDir("testdata")
+	entries, err := os.ReadDir("testdata")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +34,7 @@ func TestCompiler(t *testing.T) {
 }
 
 func testCompiler(t *testing.T, dir string) {
-	entries, err := ioutil.ReadDir(dir)
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +45,7 @@ func testCompiler(t *testing.T, dir string) {
 		if entry.Mode().IsDir() {
 			continue
 		}
-		data, err := ioutil.ReadFile(filepath.Join(dir, entry.Name()))
+		data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
 		if err != nil {
 			t.Fatalf("read %s: %s", entry.Name(), err)
 		}
@@ -78,7 +77,7 @@ func testCompiler(t *testing.T, dir string) {
 
 	const goFile = "want.go"
 	if *writeWant {
-		if err := ioutil.WriteFile(filepath.Join(dir, goFile), out, 0600); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, goFile), out, 0600); err != nil {
 			t.Fatal(err)
 		}
 	}

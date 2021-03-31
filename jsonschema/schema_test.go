@@ -3,7 +3,6 @@ package jsonschema
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -11,7 +10,7 @@ import (
 )
 
 func TestSample(t *testing.T) {
-	data, err := ioutil.ReadFile("../testdata/json-schema-draft-07-schema.json")
+	data, err := os.ReadFile("../testdata/json-schema-draft-07-schema.json")
 	if err != nil {
 		t.Fatal(err)
 	}
