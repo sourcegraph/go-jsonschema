@@ -33,8 +33,6 @@ type generator struct {
 	schemas       map[*jsonschema.Schema]schemaLocation     // for the current root schema only
 	resolutions   map[*jsonschema.Schema]*jsonschema.Schema // for all schemas in scope
 	schemaLocator schemaLocator
-
-	decls []ast.Decl
 }
 
 var emptyInterfaceType = &ast.InterfaceType{
@@ -53,7 +51,7 @@ func (g *generator) emit(schema *jsonschema.Schema) ([]ast.Decl, []*ast.ImportSp
 		return g.emitTaggedUnionType(schema)
 	}
 
-	needsNamedGoType := len(schema.Type) == 1 && schema.Type[0] == jsonschema.ObjectType && schema.Properties != nil
+	needsNamedGoType := isTypeOrNull(schema, jsonschema.ObjectType) && schema.Properties != nil
 	if !needsNamedGoType {
 		return nil, nil, nil
 	}
@@ -152,7 +150,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 	}
 
 	// Handle array types.
-	if len(schema.Type) == 1 && schema.Type[0] == jsonschema.ArrayType {
+	if isTypeOrNull(schema, jsonschema.ArrayType) {
 		var elt ast.Expr
 		var imports []*ast.ImportSpec
 		if schema.Items != nil && schema.Items.Schema != nil {
@@ -175,7 +173,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 	}
 
 	// Handle object types that are emitted as Go map types (not named struct types).
-	if len(schema.Type) == 1 && schema.Type[0] == jsonschema.ObjectType && schema.Properties == nil && schema.AdditionalProperties != nil {
+	if isTypeOrNull(schema, jsonschema.ObjectType) && schema.Properties == nil && schema.AdditionalProperties != nil {
 		typeExpr, imports, err := g.expr(schema.AdditionalProperties)
 		if err != nil {
 			return nil, nil, err
@@ -183,12 +181,21 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 		return &ast.MapType{Key: ast.NewIdent("string"), Value: typeExpr}, imports, nil
 	}
 
+	nullable := isNullable(schema)
 	// Handle types represented by Go builtin types or some other non-named types.
-	if len(schema.Type) != 1 && (schema.Go == nil || !schema.Go.TaggedUnionType) {
+	if (nullable && len(schema.Type) != 2 || !nullable && len(schema.Type) != 1) && (schema.Go == nil || !schema.Go.TaggedUnionType) {
 		return emptyInterfaceType, nil, nil
 	}
-	if len(schema.Type) == 1 && goBuiltinType(schema.Type[0]) != "" {
-		return ast.NewIdent(goBuiltinType(schema.Type[0])), nil, nil
+	if nullable && len(schema.Type) == 2 || !nullable && len(schema.Type) == 1 {
+		typ := schema.Type[0]
+		if len(schema.Type) == 2 {
+			if typ == jsonschema.NullType {
+				typ = schema.Type[1]
+			}
+		}
+		if builtin := goBuiltinType(typ); builtin != "" {
+			return ast.NewIdent(goBuiltinType(typ)), nil, nil
+		}
 	}
 	if schema.IsEmpty {
 		return emptyInterfaceType, nil, nil
