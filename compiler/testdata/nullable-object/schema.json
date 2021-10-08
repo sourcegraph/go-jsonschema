@@ -1,0 +1,12 @@
+{
+  "title": "nullable-object",
+  "type": ["object", "null"],
+  "properties": {
+    "a": {
+      "type": "string"
+    },
+    "b": {
+      "type": "number"
+    }
+  }
+}
