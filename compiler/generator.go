@@ -183,10 +183,12 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 
 	nullable := isNullable(schema)
 	// Handle types represented by Go builtin types or some other non-named types.
-	if (nullable && len(schema.Type) != 2 || !nullable && len(schema.Type) != 1) && (schema.Go == nil || !schema.Go.TaggedUnionType) {
-		return emptyInterfaceType, nil, nil
+	if (nullable && len(schema.Type) != 2) || (!nullable && len(schema.Type) != 1) {
+		if schema.Go == nil || !schema.Go.TaggedUnionType {
+			return emptyInterfaceType, nil, nil
+		}
 	}
-	if nullable && len(schema.Type) == 2 || !nullable && len(schema.Type) == 1 {
+	if (nullable && len(schema.Type) == 2) || (!nullable && len(schema.Type) == 1) {
 		typ := schema.Type[0]
 		if len(schema.Type) == 2 {
 			if typ == jsonschema.NullType {
@@ -194,7 +196,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 			}
 		}
 		if builtin := goBuiltinType(typ); builtin != "" {
-			return ast.NewIdent(goBuiltinType(typ)), nil, nil
+			return ast.NewIdent(builtin), nil, nil
 		}
 	}
 	if schema.IsEmpty {
