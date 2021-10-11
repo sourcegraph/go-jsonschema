@@ -1,0 +1,22 @@
+{
+  "title": "wrapper",
+  "type": "object",
+  "properties": {
+    "array": {
+      "type": ["array", "null"],
+      "items": {
+        "title": "nullable-array-element",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "a": {
+            "type": "string"
+          },
+          "b": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}
