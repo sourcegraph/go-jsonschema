@@ -3,6 +3,7 @@ package compiler
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
@@ -57,8 +58,14 @@ func resolveReference(ref *url.URL, locationsByRoot schemaLocationsByRoot, onlyI
 			continue
 		}
 		for schema, location := range locations {
-			if location.id != nil && location.id.String() == refStr {
-				return schema
+			if location.id != nil {
+				id := location.id.String()
+				// TODO(keegan): Eliminate the string hackiness here. It has the same
+				// source as the hackiness below, ResolveReference on paths turns
+				// relative paths into absolute paths.
+				if id == refStr || (strings.HasPrefix(refStr, "/") && id == refStr[1:]) {
+					return schema
+				}
 			}
 			// TODO(sqs): Eliminate the string hackiness here.
 			if onlyInRoot != nil && "/"+jsonschema.EncodeReferenceTokens(location.rel) == ref.Fragment {
