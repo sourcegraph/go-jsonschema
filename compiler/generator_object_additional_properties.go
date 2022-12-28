@@ -45,7 +45,7 @@ func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName 
 var (
 	structAdditionalFieldMarshalJSONTemplate = template.Must(template.New("").Parse(`
 func() ([]byte, error) {
-	m := make(map[string]interface{}, len(v.Additional)+1)
+	m := make(map[string]interface{}, len(v.Additional)+{{len .fields}})
 	for k, v := range v.Additional {
 		m[k] = v
 	}
@@ -57,33 +57,26 @@ func() ([]byte, error) {
 `))
 	structAdditionalFieldUnmarshalJSONTemplate = template.Must(template.New("").Parse(`
 func(data []byte) error {
-	var s struct {
-		{{range .fields -}}
-		{{.GoName}} {{.GoType}} {{.GoStructFieldTag}}
-		{{- end}}
-	}
+	type wrapper {{.goName}}
+	var s wrapper
 	if err := json.Unmarshal(data, &s); err != nil {
 		return err
 	}
-	*v = {{.goName}}{
-		{{range .fields -}}
-		{{.GoName}}: s.{{.GoName}},
-		{{- end}}
-	}
+	*v = {{.goName}}(s)
 
 	var m map[string]interface{}
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
-	{{range .fields -}}
+	{{- range .fields}}
 	delete(m, {{printf "%q" .JSONName}})
 	{{- end}}
 
 	if len(m) > 0 {
-		(*v).Additional = make(map[string]interface{}, len(m))
+		v.Additional = make(map[string]interface{}, len(m))
 	}
 	for k, vv := range m {
-		(*v).Additional[k] = vv
+		v.Additional[k] = vv
 	}
 	return nil
 }
