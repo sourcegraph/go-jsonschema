@@ -6,7 +6,6 @@ import (
 	"go/token"
 	"sort"
 
-	"github.com/pkg/errors"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
@@ -44,7 +43,7 @@ func Compile(schemas []*jsonschema.Schema) ([]ast.Decl, []*ast.ImportSpec, error
 	for _, schemas := range locationsByRoot {
 		decls, imports, err := generateDecls(schemas, resolutions, locationsByRoot)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, "generating decls")
+			return nil, nil, fmt.Errorf("generating decls: %w", err)
 		}
 		allDecls = append(allDecls, decls...)
 		allImports = append(allImports, imports...)

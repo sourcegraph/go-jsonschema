@@ -3,8 +3,7 @@ package jsonschema
 import (
 	"bytes"
 	"encoding/json"
-
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 // Schema is a JSON Schema draft-07 document (as specified in
@@ -18,15 +17,15 @@ type Schema struct {
 	AdditionalProperties *Schema                      `json:"additionalProperties,omitempty"`
 	AllOf                []*Schema                    `json:"allOf,omitempty"`
 	AnyOf                []*Schema                    `json:"anyOf,omitempty"`
-	Const                *interface{}                 `json:"const,omitempty"`
+	Const                *any                 `json:"const,omitempty"`
 	Contains             *Schema                      `json:"contains,omitempty"`
-	Default              *interface{}                 `json:"default,omitempty"`
+	Default              *any                 `json:"default,omitempty"`
 	Definitions          *map[string]*Schema          `json:"definitions,omitempty"`
 	Dependencies         *map[string]*DependencyValue `json:"dependencies,omitempty"`
 	Description          *string                      `json:"description,omitempty"`
 	Else                 *Schema                      `json:"else,omitempty"`
 	Enum                 EnumList                     `json:"enum,omitempty"`
-	Examples             []interface{}                `json:"examples,omitempty"`
+	Examples             []any                `json:"examples,omitempty"`
 	ExclusiveMaximum     *float64                     `json:"exclusiveMaximum,omitempty"`
 	ExclusiveMinimum     *float64                     `json:"exclusiveMinimum,omitempty"`
 	Format               *Format                      `json:"format,omitempty"`
@@ -106,7 +105,7 @@ func (s *Schema) UnmarshalJSON(data []byte) error {
 	default:
 		type schema2 Schema
 		if err := json.Unmarshal(data, (*schema2)(s)); err != nil {
-			return errors.WithMessage(err, "failed to unmarshal JSON Schema")
+			return fmt.Errorf("failed to unmarshal JSON Schema: %w", err)
 		}
 		s.Raw = raw
 	}

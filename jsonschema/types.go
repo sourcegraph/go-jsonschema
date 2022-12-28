@@ -3,11 +3,9 @@ package jsonschema
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/pkg/errors"
 )
 
-type Enum interface{}
+type Enum any
 type EnumList []Enum
 type Format string
 type PrimitiveType string
@@ -51,12 +49,12 @@ func (l *PrimitiveTypeList) UnmarshalJSON(buf []byte) error {
 	var sl []string
 	if len(buf) > 0 && buf[0] == '[' {
 		if err := json.Unmarshal(buf, &sl); err != nil {
-			return errors.Wrap(err, `failed to parse primitive types list`)
+			return fmt.Errorf("failed to parse primitive types list: %w", err)
 		}
 	} else {
 		var s string
 		if err := json.Unmarshal(buf, &s); err != nil {
-			return errors.Wrap(err, `failed to parse primitive types list`)
+			return fmt.Errorf("failed to parse primitive types list: %w", err)
 		}
 		sl = []string{s}
 	}

@@ -2,13 +2,13 @@ package compiler
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/token"
 	"sort"
 	"strconv"
 
-	"github.com/pkg/errors"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
@@ -21,7 +21,7 @@ func generateDecls(schemas map[*jsonschema.Schema]schemaLocation, resolutions ma
 	for schema := range schemas {
 		decls, imports, err := g.emit(schema)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, "failed to emit decl for schema")
+			return nil, nil, fmt.Errorf("failed to emit decl for schema: %w", err)
 		}
 		allDecls = append(allDecls, decls...)
 		allImports = append(allImports, imports...)
@@ -35,14 +35,7 @@ type generator struct {
 	schemaLocator schemaLocator
 }
 
-var emptyInterfaceType = &ast.InterfaceType{
-	Methods: &ast.FieldList{
-		// Setting these to 1 makes the `interface{}` print on the same line (because it makes this
-		// FieldList pass go/printer's (token.Pos).IsValid() check).
-		Opening: 1,
-		Closing: 1,
-	},
-}
+var anyType = &ast.Ident{Name: "any"}
 
 // emit returns the declaration for the Go type for schema, or nil if no declaration is needed (such
 // as when schema is represented by a builtin Go type).
@@ -74,7 +67,7 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) (decls []ast.Decl,
 
 		typeExpr, fieldImports, err := g.expr(prop)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, fmt.Sprintf("failed to get type expression for property %q", name))
+			return nil, nil, fmt.Errorf("failed to get type expression for property %q: %w", name, err)
 		}
 		imports = append(imports, fieldImports...)
 
@@ -85,7 +78,9 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) (decls []ast.Decl,
 			_, isPtrToArray := typeExpr.(*ast.ArrayType)
 			_, isPtrToMap := typeExpr.(*ast.MapType)
 			_, isPtrToInterface := typeExpr.(*ast.InterfaceType)
-			if (!isPtrToArray && !isPtrToMap && !isPtrToInterface && !isBasicType(typeExpr)) || forceGoPointer(prop) {
+			ident, isIdent := typeExpr.(*ast.Ident)
+			isPtrToAny := isIdent && ident.Name == "any"
+			if (!isPtrToArray && !isPtrToMap && !isPtrToInterface && !isPtrToAny && !isBasicType(typeExpr)) || forceGoPointer(prop) {
 				typeExpr = &ast.StarExpr{X: typeExpr}
 			}
 			jsonStructTagExtra = ",omitempty"
@@ -126,7 +121,7 @@ func (g *generator) emitStructType(schema *jsonschema.Schema) (decls []ast.Decl,
 	if schema.AdditionalProperties != nil && !schema.AdditionalProperties.IsNegated {
 		addlField, decls1, imports1, err := g.emitStructAdditionalField(schema, goName, fields)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, "failed to emit decl for object schema with additionalProperties")
+			return nil, nil, fmt.Errorf("failed to emit decl for object schema with additionalProperties: %w", err)
 		}
 		typeSpec.Type.(*ast.StructType).Fields.List = append(typeSpec.Type.(*ast.StructType).Fields.List, addlField)
 		decls = append(decls, decls1...)
@@ -167,7 +162,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 				elt = &ast.StarExpr{X: elt}
 			}
 		} else {
-			elt = emptyInterfaceType
+			elt = anyType
 		}
 		return &ast.ArrayType{Elt: elt}, imports, nil
 	}
@@ -185,7 +180,7 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 	// Handle types represented by Go builtin types or some other non-named types.
 	if (nullable && len(schema.Type) != 2) || (!nullable && len(schema.Type) != 1) {
 		if schema.Go == nil || !schema.Go.TaggedUnionType {
-			return emptyInterfaceType, nil, nil
+			return anyType, nil, nil
 		}
 	}
 	if (nullable && len(schema.Type) == 2) || (!nullable && len(schema.Type) == 1) {
@@ -200,10 +195,10 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 		}
 	}
 	if schema.IsEmpty {
-		return emptyInterfaceType, nil, nil
+		return anyType, nil, nil
 	}
 	if schema.IsNegated {
-		return emptyInterfaceType, nil, nil
+		return anyType, nil, nil
 	}
 
 	// Otherwise, use a Go named type.

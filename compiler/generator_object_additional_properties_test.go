@@ -12,7 +12,7 @@ func TestAdditionalProperties(t *testing.T) {
 	o := objectwithprops.ObjectWithProps{
 		A:          "1",
 		B:          "2",
-		Additional: map[string]interface{}{"c": "3", "d": "4"},
+		Additional: map[string]any{"c": "3", "d": "4"},
 	}
 
 	data, err := json.Marshal(o)
