@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/pkg/errors"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
@@ -16,7 +15,7 @@ func resolveReferences(locationsByRoot schemaLocationsByRoot) (resolutions map[*
 			if schema.Reference != nil {
 				ref, err := url.Parse(*schema.Reference)
 				if err != nil {
-					return nil, errors.WithMessage(err, "failed to parse $ref")
+					return nil, fmt.Errorf("failed to parse $ref: %w", err)
 				}
 
 				if location.id != nil {

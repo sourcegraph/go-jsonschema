@@ -12,7 +12,7 @@ import (
 func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName string, fields []field) (*ast.Field, []ast.Decl, []*ast.ImportSpec, error) {
 	additionalField := &ast.Field{
 		Names: []*ast.Ident{ast.NewIdent("Additional")},
-		Type:  &ast.MapType{Key: ast.NewIdent("string"), Value: emptyInterfaceType},
+		Type:  &ast.MapType{Key: ast.NewIdent("string"), Value: anyType},
 		Tag: &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf("`json:%q`", "-"),
@@ -22,7 +22,7 @@ func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName 
 	//for
 
 	// Generate MarshalJSON and UnmarshalJSON methods on the Go union type.
-	templateData := map[string]interface{}{
+	templateData := map[string]any{
 		"fields": fields,
 		"goName": goName,
 	}
@@ -45,7 +45,7 @@ func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName 
 var (
 	structAdditionalFieldMarshalJSONTemplate = template.Must(template.New("").Parse(`
 func() ([]byte, error) {
-	m := make(map[string]interface{}, len(v.Additional)+{{len .fields}})
+	m := make(map[string]any, len(v.Additional)+{{len .fields}})
 	for k, v := range v.Additional {
 		m[k] = v
 	}
@@ -64,7 +64,7 @@ func(data []byte) error {
 	}
 	*v = {{.goName}}(s)
 
-	var m map[string]interface{}
+	var m map[string]any
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func(data []byte) error {
 	{{- end}}
 
 	if len(m) > 0 {
-		v.Additional = make(map[string]interface{}, len(m))
+		v.Additional = make(map[string]any, len(m))
 	}
 	for k, vv := range m {
 		v.Additional[k] = vv

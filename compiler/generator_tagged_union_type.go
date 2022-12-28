@@ -1,13 +1,13 @@
 package compiler
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/token"
 	"reflect"
 	"text/template"
 
-	"github.com/pkg/errors"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
@@ -71,13 +71,13 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 		if len(prop.Type) != 1 || prop.Type[0] != jsonschema.StringType {
 			return nil, nil, errors.New("invalid oneOf schema discriminant prop type for !go.taggedUnionType extension (must be string type)")
 		}
-		var constVal *interface{}
+		var constVal *any
 		if prop.Const != nil {
 			constVal = prop.Const
 		}
 		for _, enumVal := range prop.Enum {
 			if constVal == nil {
-				v := (interface{}(enumVal))
+				v := (any(enumVal))
 				constVal = &v
 			} else if !reflect.DeepEqual(*constVal, enumVal) {
 				return nil, nil, fmt.Errorf("invalid oneOf schema discriminant prop enum value for !go.taggedUnionType extension (must have exactly 1 unique string value, got %q != %q)", *constVal, enumVal)
@@ -110,7 +110,7 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 		fieldNameToConstValue[fieldNames[i]] = constValue
 		typeExpr, fieldImports, err := g.expr(s)
 		if err != nil {
-			return nil, nil, errors.WithMessage(err, fmt.Sprintf("failed to get type expression for !go.taggedUnionType union type %q", fieldNames[i]))
+			return nil, nil, fmt.Errorf("failed to get type expression for !go.taggedUnionType union type %q: %w", fieldNames[i], err)
 		}
 		imports = append(imports, fieldImports...)
 		fields[i] = &ast.Field{
@@ -132,7 +132,7 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 	}
 
 	// Generate MarshalJSON and UnmarshalJSON methods on the Go union type.
-	templateData := map[string]interface{}{
+	templateData := map[string]any{
 		"fieldNames":            fieldNames,
 		"discriminantPropName":  discriminantPropName,
 		"discriminantValues":    discriminantValues,

@@ -6,8 +6,6 @@ import (
 	"go/ast"
 	"go/parser"
 	"text/template"
-
-	"github.com/pkg/errors"
 )
 
 func makeMethod(f *ast.FuncDecl, recvType ast.Expr, name string) {
@@ -20,7 +18,7 @@ func makeMethod(f *ast.FuncDecl, recvType ast.Expr, name string) {
 	f.Name = ast.NewIdent(name)
 }
 
-func executeTemplate(tmpl *template.Template, data interface{}) string {
+func executeTemplate(tmpl *template.Template, data any) string {
 	var buf bytes.Buffer
 	if err := tmpl.Execute(&buf, data); err != nil {
 		panic(err)
@@ -31,7 +29,7 @@ func executeTemplate(tmpl *template.Template, data interface{}) string {
 func parseFuncLitToFuncDecl(funcLitExpr string) (*ast.FuncDecl, error) {
 	x, err := parser.ParseExpr(funcLitExpr)
 	if err != nil {
-		return nil, errors.WithMessage(err, fmt.Sprintf("parsing func lit expr: %s", funcLitExpr))
+		return nil, fmt.Errorf("parsing func lit expr %q: %w", funcLitExpr, err)
 	}
 	funcLit, ok := x.(*ast.FuncLit)
 	if !ok {

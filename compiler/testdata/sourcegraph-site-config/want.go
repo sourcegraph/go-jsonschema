@@ -209,7 +209,7 @@ type Langservers struct {
 	// Disabled description: Whether or not this language server is disabled.
 	Disabled bool `json:"disabled,omitempty"`
 	// InitializationOptions description: LSP initialization options. This object will be set as the `initializationOptions` field in LSP initialize requests (https://microsoft.github.io/language-server-protocol/specification#initialize).
-	InitializationOptions map[string]interface{} `json:"initializationOptions,omitempty"`
+	InitializationOptions map[string]any `json:"initializationOptions,omitempty"`
 	// Language description: Name of the language mode for the langserver (e.g. go, java)
 	Language string `json:"language"`
 	// Metadata description: Language server metadata. Used to populate various UI elements.
@@ -461,7 +461,7 @@ type SiteConfiguration struct {
 	// HttpStrictTransportSecurity description: The value of the Strict-Transport-Security HTTP header sent by Sourcegraph, if non-empty
 	HttpStrictTransportSecurity string `json:"httpStrictTransportSecurity,omitempty"`
 	// HttpToHttpsRedirect description: Redirect users from HTTP to HTTPS. Accepted values are "on", "off", and "load-balanced" (boolean values true and false are also accepted and equivalent to "on" and "off" respectively). If "load-balanced" then additionally we use "X-Forwarded-Proto" to determine if on HTTP.
-	HttpToHttpsRedirect interface{} `json:"httpToHttpsRedirect,omitempty"`
+	HttpToHttpsRedirect any `json:"httpToHttpsRedirect,omitempty"`
 	// Langservers description: Language server configuration.
 	Langservers []*Langservers `json:"langservers,omitempty"`
 	// LightstepAccessToken description: Access token for sending traces to LightStep.

@@ -5,10 +5,8 @@ package compiler
 import (
 	"encoding/json"
 	"reflect"
-	"strings"
 	"testing"
 
-	"github.com/kr/pretty"
 	testdata_oneof "github.com/sourcegraph/go-jsonschema/compiler/testdata/oneOf"
 	"github.com/sourcegraph/go-jsonschema/internal/testutil"
 )
@@ -66,7 +64,7 @@ func TestOneOf(t *testing.T) {
 				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(got, test.want) {
-				t.Errorf("Unmarshal: got != want\n%s", strings.Join(pretty.Diff(got, test.want), "\n"))
+				t.Errorf("Unmarshal: got (%+v) != want (%+v)", got, test.want)
 			}
 			data, err := json.Marshal(got)
 			if err != nil {

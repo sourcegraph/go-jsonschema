@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"reflect"
-	"strings"
 	"testing"
 
-	"github.com/kr/pretty"
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
@@ -92,7 +90,7 @@ func TestParseSchema(t *testing.T) {
 			}
 			return m
 		}
-		t.Errorf("got locations != want locations\n%s", strings.Join(pretty.Diff(simplify(locations), simplify(want)), "\n"))
+		t.Errorf("got locations (%+v) != want locations (%+v)", simplify(locations), simplify(want))
 	}
 }
 
