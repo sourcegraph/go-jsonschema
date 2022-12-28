@@ -3,8 +3,9 @@ package p
 import "encoding/json"
 
 type ObjectWithProps struct {
-	A          string         `json:"a,omitempty"`
-	B          string         `json:"b,omitempty"`
+	A string `json:"a,omitempty"`
+	B string `json:"b,omitempty"`
+// Additional properties on the object not explicitly defined in the JSON Schema.
 	Additional map[string]any `json:"-"`
 }
 
