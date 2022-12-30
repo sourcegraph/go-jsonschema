@@ -11,14 +11,14 @@ import (
 
 func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName string, fields []field) (*ast.Field, []ast.Decl, []*ast.ImportSpec, error) {
 	additionalField := &ast.Field{
-		Doc: &ast.CommentGroup{
-			List: []*ast.Comment{{Text: "\n// Additional properties on the object not explicitly defined in the JSON Schema."}},
-		},
 		Names: []*ast.Ident{ast.NewIdent("Additional")},
 		Type:  &ast.MapType{Key: ast.NewIdent("string"), Value: anyType},
 		Tag: &ast.BasicLit{
 			Kind:  token.STRING,
 			Value: fmt.Sprintf("`json:%q`", "-"),
+		},
+		Comment: &ast.CommentGroup{
+			List: []*ast.Comment{{Text: " // additionalProperties not explicitly defined in the schema"}},
 		},
 	}
 
