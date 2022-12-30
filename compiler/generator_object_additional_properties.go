@@ -22,8 +22,6 @@ func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName 
 		},
 	}
 
-	//for
-
 	// Generate MarshalJSON and UnmarshalJSON methods on the Go union type.
 	templateData := map[string]any{
 		"fields": fields,
@@ -48,13 +46,25 @@ func (g *generator) emitStructAdditionalField(schema *jsonschema.Schema, goName 
 var (
 	structAdditionalFieldMarshalJSONTemplate = template.Must(template.New("").Parse(`
 func() ([]byte, error) {
-	m := make(map[string]any, len(v.Additional)+{{len .fields}})
+	m := make(map[string]any, len(v.Additional))
 	for k, v := range v.Additional {
 		m[k] = v
 	}
-	{{range .fields}}
-	m[{{printf "%q" .JSONName}}]  = v.{{.GoName}}
-	{{end}}
+
+	type wrapper {{.goName}}
+	b, err := json.Marshal(wrapper(v))
+	if err != nil {
+		return nil, err
+	}
+	var m2 map[string]any
+	if err := json.Unmarshal(b, &m2); err != nil {
+		return nil, err
+	}
+
+	for k, v := range m2 {
+		m[k] = v
+	}
+
 	return json.Marshal(m)
 }
 `))

@@ -1,5 +1,7 @@
 package p
 
+import "encoding/json"
+
 type SearchSavedQueries struct {
 // Description description: Description of this saved query
 	Description string `json:"description"`
@@ -44,6 +46,51 @@ type Settings struct {
 	SearchSavedQueries []*SearchSavedQueries `json:"search.savedQueries,omitempty"`
 // SearchScopes description: Predefined search scopes
 	SearchScopes []*SearchScope `json:"search.scopes,omitempty"`
+	Additional   map[string]any `json:"-"` // additionalProperties not explicitly defined in the schema
+}
+
+func (v Settings) MarshalJSON() ([]byte, error) {
+	m := make(map[string]any, len(v.Additional))
+	for k, v := range v.Additional {
+		m[k] = v
+	}
+	type wrapper Settings
+	b, err := json.Marshal(wrapper(v))
+	if err != nil {
+		return nil, err
+	}
+	var m2 map[string]any
+	if err := json.Unmarshal(b, &m2); err != nil {
+		return nil, err
+	}
+	for k, v := range m2 {
+		m[k] = v
+	}
+	return json.Marshal(m)
+}
+func (v *Settings) UnmarshalJSON(data []byte) error {
+	type wrapper Settings
+	var s wrapper
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*v = Settings(s)
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	delete(m, "motd")
+	delete(m, "notifications.slack")
+	delete(m, "search.repositoryGroups")
+	delete(m, "search.savedQueries")
+	delete(m, "search.scopes")
+	if len(m) > 0 {
+		v.Additional = make(map[string]any, len(m))
+	}
+	for k, vv := range m {
+		v.Additional[k] = vv
+	}
+	return nil
 }
 
 // SlackNotificationsConfig description: Configuration for sending notifications to Slack.
