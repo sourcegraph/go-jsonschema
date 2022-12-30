@@ -3,18 +3,29 @@ package p
 import "encoding/json"
 
 type ObjectWithProps struct {
-	A          string         `json:"a,omitempty"`
-	B          string         `json:"b,omitempty"`
+	P0         string         `json:"p0,omitempty"`
+	P1         float64        `json:"p1"`
+	P2         *P2            `json:"p2,omitempty"`
 	Additional map[string]any `json:"-"` // additionalProperties not explicitly defined in the schema
 }
 
 func (v ObjectWithProps) MarshalJSON() ([]byte, error) {
-	m := make(map[string]any, len(v.Additional)+2)
+	m := make(map[string]any, len(v.Additional))
 	for k, v := range v.Additional {
 		m[k] = v
 	}
-	m["a"] = v.A
-	m["b"] = v.B
+	type wrapper ObjectWithProps
+	b, err := json.Marshal(wrapper(v))
+	if err != nil {
+		return nil, err
+	}
+	var m2 map[string]any
+	if err := json.Unmarshal(b, &m2); err != nil {
+		return nil, err
+	}
+	for k, v := range m2 {
+		m[k] = v
+	}
 	return json.Marshal(m)
 }
 func (v *ObjectWithProps) UnmarshalJSON(data []byte) error {
@@ -28,8 +39,9 @@ func (v *ObjectWithProps) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
-	delete(m, "a")
-	delete(m, "b")
+	delete(m, "p0")
+	delete(m, "p1")
+	delete(m, "p2")
 	if len(m) > 0 {
 		v.Additional = make(map[string]any, len(m))
 	}
@@ -37,4 +49,8 @@ func (v *ObjectWithProps) UnmarshalJSON(data []byte) error {
 		v.Additional[k] = vv
 	}
 	return nil
+}
+
+type P2 struct {
+	A string `json:"a,omitempty"`
 }
