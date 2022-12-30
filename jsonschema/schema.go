@@ -17,15 +17,15 @@ type Schema struct {
 	AdditionalProperties *Schema                      `json:"additionalProperties,omitempty"`
 	AllOf                []*Schema                    `json:"allOf,omitempty"`
 	AnyOf                []*Schema                    `json:"anyOf,omitempty"`
-	Const                *any                 `json:"const,omitempty"`
+	Const                *any                         `json:"const,omitempty"`
 	Contains             *Schema                      `json:"contains,omitempty"`
-	Default              *any                 `json:"default,omitempty"`
+	Default              *any                         `json:"default,omitempty"`
 	Definitions          *map[string]*Schema          `json:"definitions,omitempty"`
 	Dependencies         *map[string]*DependencyValue `json:"dependencies,omitempty"`
 	Description          *string                      `json:"description,omitempty"`
 	Else                 *Schema                      `json:"else,omitempty"`
 	Enum                 EnumList                     `json:"enum,omitempty"`
-	Examples             []any                `json:"examples,omitempty"`
+	Examples             []any                        `json:"examples,omitempty"`
 	ExclusiveMaximum     *float64                     `json:"exclusiveMaximum,omitempty"`
 	ExclusiveMinimum     *float64                     `json:"exclusiveMinimum,omitempty"`
 	Format               *Format                      `json:"format,omitempty"`
