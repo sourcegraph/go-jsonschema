@@ -191,6 +191,10 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 			}
 		}
 		if builtin := goBuiltinType(typ); builtin != "" {
+			if schema.Go != nil && schema.Go.TypeName != "" {
+				return ast.NewIdent(schema.Go.TypeName), nil, nil
+			}
+
 			return ast.NewIdent(builtin), nil, nil
 		}
 	}
