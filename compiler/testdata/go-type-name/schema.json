@@ -1,0 +1,12 @@
+{
+  "title": "go-type-name",
+  "type": "object",
+  "properties": {
+	"a": {
+	  "type": "string",
+	  "!go": {
+		"typeName": "CustomType"
+	  }
+	}
+  }
+}
