@@ -1,3 +1,3 @@
 module github.com/sourcegraph/go-jsonschema
 
-go 1.19
+go 1.25.9
