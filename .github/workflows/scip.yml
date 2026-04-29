@@ -4,25 +4,15 @@ name: SCIP
 jobs:
   scip-go:
     runs-on: ubuntu-latest
-    env:
-      SRC_ACCESS_TOKEN: ${{ secrets.SRC_ACCESS_TOKEN }}
-      SRC_ENDPOINT: ${{ secrets.SRC_ENDPOINT }}
+    container: sourcegraph/scip-go
     steps:
-      - name: Skip upload when Sourcegraph secrets are not configured
-        if: ${{ env.SRC_ENDPOINT == '' || env.SRC_ACCESS_TOKEN == '' }}
-        run: echo "Skipping SCIP upload because SRC_ENDPOINT/SRC_ACCESS_TOKEN are not configured."
-      - uses: actions/checkout@v5
-        if: ${{ env.SRC_ENDPOINT != '' && env.SRC_ACCESS_TOKEN != '' }}
-      - name: Set up Go
-        if: ${{ env.SRC_ENDPOINT != '' && env.SRC_ACCESS_TOKEN != '' }}
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-      - name: Generate and upload SCIP index
-        if: ${{ env.SRC_ENDPOINT != '' && env.SRC_ACCESS_TOKEN != '' }}
-        uses: sourcegraph/scip-go-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          sourcegraph-token: ${{ env.SRC_ACCESS_TOKEN }}
-          sourcegraph-url: ${{ env.SRC_ENDPOINT }}
-          upload: true
+      - uses: actions/checkout@v1
+      - name: Get src-cli
+        run: curl -L https://sourcegraph.com/.api/src-cli/src_linux_amd64 -o /usr/local/bin/src;
+          chmod +x /usr/local/bin/src
+      - name: Set directory to safe for git
+        run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      - name: Generate SCIP data
+        run: scip-go
+      - name: Upload SCIP data
+        run: src code-intel upload -github-token=${{ secrets.GITHUB_TOKEN }}
