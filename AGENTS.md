@@ -27,9 +27,6 @@ git submodule update --init --recursive
 ## Build, test, run
 
 ```sh
-go build ./...                       # build all packages
-go test ./...                        # run the full test suite (as in CI)
-go vet ./...                         # static checks
 go run ./cmd/go-jsonschema-compiler -pkg schema -o out.go schema.json
 ```
 
