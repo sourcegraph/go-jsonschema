@@ -16,8 +16,6 @@ generating Go types from them.
 
 ## Setup
 
-Requires the Go toolchain matching `go.mod` (`go 1.25.9`).
-
 The official test suite is vendored as a git submodule. After cloning, run:
 
 ```sh
