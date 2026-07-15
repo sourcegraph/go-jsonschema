@@ -1,0 +1,10 @@
+{
+  "title": "bare-object-property",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "args": {
+      "type": "object"
+    }
+  }
+}

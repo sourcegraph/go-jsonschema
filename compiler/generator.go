@@ -167,13 +167,22 @@ func (g *generator) expr(schema *jsonschema.Schema) (ast.Expr, []*ast.ImportSpec
 		return &ast.ArrayType{Elt: elt}, imports, nil
 	}
 
-	// Handle object types that are emitted as Go map types (not named struct types).
-	if isTypeOrNull(schema, jsonschema.ObjectType) && schema.Properties == nil && schema.AdditionalProperties != nil {
-		typeExpr, imports, err := g.expr(schema.AdditionalProperties)
-		if err != nil {
-			return nil, nil, err
+	// Handle object types with no properties: emit a Go map type instead of a named struct type.
+	// The map's value type comes from additionalProperties. When additionalProperties is omitted it
+	// defaults to true per JSON Schema (any value is allowed), so use any; otherwise emit would not
+	// declare a named type for the object and the generated code would not compile.
+	if isTypeOrNull(schema, jsonschema.ObjectType) && schema.Properties == nil &&
+		(schema.Go == nil || !schema.Go.TaggedUnionType) {
+		var valueType ast.Expr = anyType
+		var imports []*ast.ImportSpec
+		if schema.AdditionalProperties != nil {
+			var err error
+			valueType, imports, err = g.expr(schema.AdditionalProperties)
+			if err != nil {
+				return nil, nil, err
+			}
 		}
-		return &ast.MapType{Key: ast.NewIdent("string"), Value: typeExpr}, imports, nil
+		return &ast.MapType{Key: ast.NewIdent("string"), Value: valueType}, imports, nil
 	}
 
 	nullable := isNullable(schema)
