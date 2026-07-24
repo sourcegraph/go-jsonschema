@@ -4,16 +4,6 @@ Guidance for coding agents working in `github.com/sourcegraph/go-jsonschema`, an
 **experimental** Go library for reading JSON Schema (draft-07) documents and
 generating Go types from them.
 
-## Layout
-
-- `jsonschema/` — core library: schema types, parsing, walking, URI handling.
-- `compiler/` — generates Go source from JSON Schemas (parser, resolver,
-  generators); golden-file fixtures live in `compiler/testdata/`.
-- `cmd/go-jsonschema-compiler/` — CLI that emits Go types from schema files.
-- `internal/` — test helpers (`testutil`) and the official JSON Schema test
-  suite runner (`jsonschematestsuite`).
-- `testdata/` — shared schema fixtures (e.g. the draft-07 meta-schema).
-
 ## Setup
 
 The official test suite is vendored as a git submodule. After cloning, run:
