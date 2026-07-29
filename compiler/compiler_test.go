@@ -7,6 +7,7 @@ import (
 	"go/ast"
 	"go/format"
 	"go/token"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -46,7 +47,7 @@ func testCompiler(t *testing.T, dir string) {
 		if entry.Mode().IsDir() {
 			continue
 		}
-		data, err := ioutil.ReadFile(filepath.Join(dir, entry.Name()))
+		data, err := os.ReadFile(filepath.Join(dir, entry.Name()))
 		if err != nil {
 			t.Fatalf("read %s: %s", entry.Name(), err)
 		}
@@ -78,7 +79,7 @@ func testCompiler(t *testing.T, dir string) {
 
 	const goFile = "want.go"
 	if *writeWant {
-		if err := ioutil.WriteFile(filepath.Join(dir, goFile), out, 0600); err != nil {
+		if err := os.WriteFile(filepath.Join(dir, goFile), out, 0600); err != nil {
 			t.Fatal(err)
 		}
 	}
