@@ -11,7 +11,6 @@ import (
 	"go/format"
 	"go/token"
 	"io"
-	"io/ioutil"
 	"os"
 
 	"github.com/sourcegraph/go-jsonschema/compiler"
@@ -107,7 +106,7 @@ func readSchema(filename string) (*jsonschema.Schema, error) {
 // contents at path are different to data. This is to avoid triggering file
 // watchers if there is no change.
 func writeFileIfDifferent(path string, data []byte) error {
-	old, err := ioutil.ReadFile(path)
+	old, err := os.ReadFile(path)
 	if err == nil && bytes.Equal(old, data) {
 		// Skip writing
 		return nil
@@ -116,5 +115,5 @@ func writeFileIfDifferent(path string, data []byte) error {
 	// other errors can occur. In any case we just want to attempt doing a write
 	// and return that error.
 
-	return ioutil.WriteFile(path, data, 0666)
+	return os.WriteFile(path, data, 0666)
 }
