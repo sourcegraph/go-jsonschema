@@ -3,7 +3,8 @@ package jsonschema
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"os"
+
 	"reflect"
 	"testing"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func TestSample(t *testing.T) {
-	data, err := ioutil.ReadFile("../testdata/json-schema-draft-07-schema.json")
+	data, err := os.ReadFile("../testdata/json-schema-draft-07-schema.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +36,7 @@ func TestSample(t *testing.T) {
 
 func TestRaw(t *testing.T) {
 	t.Run("marshal", func(t *testing.T) {
-		b, err := json.Marshal(Schema{Comment: strptr("c")})
+		b, err := json.Marshal(Schema{Comment: new("c")})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -49,10 +50,11 @@ func TestRaw(t *testing.T) {
 		if err := json.Unmarshal([]byte(input), &o); err != nil {
 			t.Fatal(err)
 		}
-		if want := (Schema{Comment: strptr("c"), Raw: (*json.RawMessage)(&input)}); !reflect.DeepEqual(o, want) {
+		if want := (Schema{Comment: new("c"), Raw: (*json.RawMessage)(&input)}); !reflect.DeepEqual(o, want) {
 			t.Errorf("got %+v, want %+v", o, want)
 		}
 	})
 }
 
-func strptr(s string) *string { return &s }
+//go:fix inline
+func strptr(s string) *string { return new(s) }

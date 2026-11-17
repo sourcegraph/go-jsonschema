@@ -6,6 +6,7 @@ import (
 	"go/ast"
 	"go/token"
 	"reflect"
+	"slices"
 	"text/template"
 
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
@@ -58,11 +59,8 @@ func (g *generator) emitTaggedUnionType(schema *jsonschema.Schema) ([]ast.Decl, 
 		prop := (*s.Properties)[discriminantPropName]
 
 		var required bool
-		for _, req := range s.Required {
-			if req == discriminantPropName {
-				required = true
-				break
-			}
+		if slices.Contains(s.Required, discriminantPropName) {
+			required = true
 		}
 		if !required {
 			return nil, nil, fmt.Errorf("invalid oneOf schema for !go.taggedUnionType extension (discriminant property %q must be required)", discriminantPropName)

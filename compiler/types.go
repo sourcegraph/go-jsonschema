@@ -2,17 +2,13 @@ package compiler
 
 import (
 	"go/ast"
+	"slices"
 
 	"github.com/sourcegraph/go-jsonschema/jsonschema"
 )
 
 func isNullable(schema *jsonschema.Schema) bool {
-	for _, typ := range schema.Type {
-		if typ == jsonschema.NullType {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(schema.Type, jsonschema.NullType)
 }
 
 func isTypeOrNull(schema *jsonschema.Schema, typ jsonschema.PrimitiveType) bool {

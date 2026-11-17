@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"slices"
 )
 
 // Schema is a JSON Schema draft-07 document (as specified in
@@ -72,12 +73,7 @@ type Schema struct {
 // schema.
 func (s *Schema) IsRequiredProperty(propertyName string) bool {
 	// TODO(sqs): This ignores complexity like dependencies, allOf, etc.
-	for _, p := range s.Required {
-		if p == propertyName {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(s.Required, propertyName)
 }
 
 var trueBytes = []byte("true")

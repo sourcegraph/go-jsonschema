@@ -24,7 +24,7 @@ func TestParseSchema(t *testing.T) {
 		},
 	}
 	schemaE := &jsonschema.Schema{
-		ID:    strptr("e"),
+		ID:    new("e"),
 		Type:  jsonschema.PrimitiveTypeList{jsonschema.ArrayType},
 		Items: &jsonschema.SchemaOrSchemaList{Schema: schemaC},
 	}
@@ -35,7 +35,7 @@ func TestParseSchema(t *testing.T) {
 		},
 	}
 	schemaRoot := &jsonschema.Schema{
-		Title: strptr("root"),
+		Title: new("root"),
 		Type:  jsonschema.PrimitiveTypeList{jsonschema.ObjectType},
 		Properties: &map[string]*jsonschema.Schema{
 			"a": schemaA,
@@ -94,4 +94,5 @@ func TestParseSchema(t *testing.T) {
 	}
 }
 
-func strptr(s string) *string { return &s }
+//go:fix inline
+func strptr(s string) *string { return new(s) }
